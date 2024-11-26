@@ -44,7 +44,12 @@ export class StacksController {
   }
 
   @Post('/signin')
-  async handleSignIn(@Body() credential: string) {
+  async handleSignIn(@Body('credential') credential: string) {
     return await this.stacksService.handleSignIn(credential);
+  }
+
+  @Post('/login')
+  async handleLogin(@Body('credential') credential: string) {
+    return await this.stacksService.handleLogin(credential);
   }
 }

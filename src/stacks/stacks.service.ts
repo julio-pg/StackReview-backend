@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
 import { UpdateStackDto } from './dto/update-stack.dto';
 import { Stack } from './schemas/stack.schema';
@@ -15,41 +15,107 @@ export class StacksService {
   ) {}
 
   async create(createStackDto: CreateStackDto) {
-    return await this.stackModel.create(createStackDto);
+    try {
+      return await this.stackModel.create(createStackDto);
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to create stack');
+    }
   }
 
   async findAll() {
-    return await this.stackModel.find();
+    try {
+      return await this.stackModel.find();
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to fetch stacks');
+    }
   }
 
   async findOne(id: string) {
-    return await this.stackModel.findOne({ id });
+    try {
+      const stack = await this.stackModel.findOne({ id });
+      if (!stack) {
+        throw new NotFoundException('Stack not found');
+      }
+      return stack;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to fetch stack');
+    }
   }
 
   async update(id: string, updateStackDto: UpdateStackDto) {
-    return await this.stackModel.findByIdAndUpdate(id, updateStackDto);
+    try {
+      const stack = await this.stackModel.findByIdAndUpdate(id, updateStackDto);
+      if (!stack) {
+        throw new NotFoundException('Stack not found');
+      }
+      return stack;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to update stack');
+    }
   }
 
   async remove(id: string) {
-    return await this.stackModel.findByIdAndDelete(id);
+    try {
+      const stack = await this.stackModel.findByIdAndDelete(id);
+      if (!stack) {
+        throw new NotFoundException('Stack not found');
+      }
+      return stack;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to delete stack');
+    }
+  }
+
+  async handleGoogleAuth(credential: string) {
+    try {
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload: TokenPayload = ticket.getPayload();
+      return payload;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to authenticate with Google');
+    }
   }
 
   async handleSignIn(credential: string) {
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload: TokenPayload = ticket.getPayload();
+    try {
+      const payload: TokenPayload = await this.handleGoogleAuth(credential);
+      return await this.creatorModel.create({
+        name: payload.name,
+        username: payload.name.replace(/\s/g, ''),
+        avatar: payload.picture,
+        expertise: 'Software Engineer',
+        bio: 'I am a software engineer',
+        googleUser: payload,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to sign in');
+    }
+  }
 
-    // Handle user data (e.g., save to DB, create session)
-    return await this.creatorModel.create({
-      name: payload.name,
-      username: payload.name,
-      avatar: payload.picture,
-      expertise: 'Software Engineer',
-      bio: 'I am a software engineer',
-      googleUser: payload,
-    });
+  async handleLogin(credential: string) {
+    try {
+      const payload: TokenPayload = await this.handleGoogleAuth(credential);
+      const creator = await this.creatorModel.findOne({
+        'googleUser.sub': payload.sub,
+      });
+      if (!creator) {
+        throw new NotFoundException('Creator not found');
+      }
+      return creator;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to login');
+    }
   }
 }
