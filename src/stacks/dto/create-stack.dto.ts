@@ -5,12 +5,7 @@ export class CreateStackDto {
   readonly description: string;
   readonly rating: number;
   readonly tags: string[];
-  readonly creator: {
-    name: string;
-    username: string;
-    avatar: string;
-    expertise: string;
-    bio: string;
-  };
+  readonly creatorId: string;
+
   readonly technologies: Technology[];
 }

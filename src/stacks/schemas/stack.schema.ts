@@ -1,28 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import { Creator } from './creator.schema';
 
-@Schema()
-class Creator {
-  @Prop({ required: true })
-  name: string;
-
-  @Prop({ required: true })
-  username: string;
-
-  @Prop({ required: true })
-  avatar: string;
-
-  @Prop({ required: true })
-  expertise: string;
-
-  @Prop({ required: true })
-  bio: string;
-  @Prop({ required: false })
-  github: string;
-  @Prop({ required: false })
-  twitter: string;
-}
 export type StackDocument = HydratedDocument<Stack>;
 
 @Schema({ timestamps: true })
