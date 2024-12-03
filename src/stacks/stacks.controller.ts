@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { StacksService } from './stacks.service';
 import { CreateStackDto } from './dto/create-stack.dto';
 import { UpdateStackDto } from './dto/update-stack.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
 
 @Controller('stacks')
 export class StacksController {
@@ -20,9 +22,17 @@ export class StacksController {
     return await this.stacksService.create(createStackDto);
   }
 
+  @Post('/review')
+  async createReview(@Body() createReviewDto: CreateReviewDto) {
+    return await this.stacksService.addReview(createReviewDto);
+  }
   @Get('/all')
   async findAll() {
     return await this.stacksService.findAll();
+  }
+  @Get('/user-stacks')
+  async findUserStacks(@Query('userId') userId: string) {
+    return await this.stacksService.findUserStacks(userId);
   }
 
   @Get(':id')

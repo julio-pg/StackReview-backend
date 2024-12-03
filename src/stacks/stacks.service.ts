@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
 import { UpdateStackDto } from './dto/update-stack.dto';
-import { Stack } from './schemas/stack.schema';
+import { CreatorMini, Stack } from './schemas/stack.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Creator } from './schemas/creator.schema';
+import { CreateReviewDto } from './dto/create-review.dto';
 
 @Injectable()
 export class StacksService {
@@ -16,16 +17,73 @@ export class StacksService {
 
   async create(createStackDto: CreateStackDto) {
     try {
-      return await this.stackModel.create(createStackDto);
+      const creatorMini: CreatorMini = await this.getCreatorMini(
+        createStackDto.creatorId,
+      );
+
+      const newStack: Omit<Stack, 'id' | 'rating' | 'reviews'> = {
+        title: createStackDto.title,
+        description: createStackDto.description,
+        category: createStackDto.category,
+        technologies: createStackDto.technologies,
+        creator: creatorMini,
+      };
+      return await this.stackModel.create(newStack);
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to create stack');
     }
   }
 
+  async addReview(createReviewDto: CreateReviewDto) {
+    try {
+      const stack = await this.stackModel.findOne({
+        id: createReviewDto.stackId,
+      });
+      if (!stack) {
+        throw new NotFoundException('Stack not found');
+      }
+      const creatorMini = await this.getCreatorMini(createReviewDto.creatorId);
+      const newReview = {
+        stackId: createReviewDto.stackId,
+        creator: creatorMini,
+        rate: createReviewDto.rate,
+        comment: createReviewDto.comment,
+      };
+      stack.reviews.push(newReview);
+      await stack.save();
+      return stack;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to add review');
+    }
+  }
+
+  private async getCreatorMini(creatorId: string): Promise<CreatorMini> {
+    try {
+      const creatorData = await this.creatorModel.findOne({ id: creatorId });
+      if (!creatorData) {
+        throw new NotFoundException('Creator not found');
+      }
+      const creatorMini: CreatorMini = {
+        id: creatorData.id,
+        name: creatorData.name,
+        username: creatorData.username,
+        avatar: creatorData.avatar,
+        expertise: creatorData.expertise,
+      };
+      return creatorMini;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to fetch creator');
+    }
+  }
+
   async findAll() {
     try {
-      return await this.stackModel.find();
+      const data = await this.stackModel.find();
+
+      return data;
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to fetch stacks');
@@ -42,6 +100,16 @@ export class StacksService {
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to fetch stack');
+    }
+  }
+
+  async findUserStacks(userId: string) {
+    try {
+      const data = await this.stackModel.find({ 'creator.id': userId });
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get user stacks');
     }
   }
 
@@ -91,7 +159,6 @@ export class StacksService {
       const payload: TokenPayload = await this.handleGoogleAuth(credential);
       return await this.creatorModel.create({
         name: payload.name,
-        username: payload.name.replace(/\s/g, ''),
         avatar: payload.picture,
         expertise: 'Software Engineer',
         bio: 'I am a software engineer',

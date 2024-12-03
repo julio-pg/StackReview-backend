@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { Creator } from './creator.schema';
+import { Review } from './Review.schema';
 
 export type StackDocument = HydratedDocument<Stack>;
 
@@ -15,25 +16,28 @@ export class Stack {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ required: true, default: 0 })
+  @Prop({ required: false, default: 0 })
   rating: number;
 
-  // @Prop({ required: true, default: 0 })
-  // reviews: number;
+  @Prop({ type: Array<Review>, required: false, default: [] })
+  reviews: Review[];
 
-  @Prop({ type: [String], required: true })
-  tags: string[];
+  @Prop({ required: true })
+  category: string;
 
   @Prop({ type: Array<Technology>, required: true })
   technologies: Technology[];
 
-  @Prop({ type: Creator, required: true })
-  creator: Creator;
+  @Prop({ type: Object, required: true })
+  creator: CreatorMini;
 }
+export type CreatorMini = Pick<
+  Creator,
+  'id' | 'avatar' | 'name' | 'username' | 'expertise'
+>;
+
 export interface Technology {
   name: string;
-  version: string;
-  description: string;
   category: string;
   website: string;
 }
