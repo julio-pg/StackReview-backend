@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Creator } from './schemas/creator.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { Review } from './schemas/Review.schema';
 
 @Injectable()
 export class StacksService {
@@ -44,14 +45,17 @@ export class StacksService {
         throw new NotFoundException('Stack not found');
       }
       const creatorMini = await this.getCreatorMini(createReviewDto.creatorId);
-      const newReview = {
+      const newReview: Review = {
         stackId: createReviewDto.stackId,
         creator: creatorMini,
         rate: createReviewDto.rate,
         comment: createReviewDto.comment,
+        createdAt: new Date(),
       };
-      stack.reviews.push(newReview);
-      await stack.save();
+      await this.stackModel.findOneAndUpdate(
+        { id: createReviewDto.stackId },
+        { $push: { reviews: newReview } },
+      );
       return stack;
     } catch (error) {
       console.log(error);
