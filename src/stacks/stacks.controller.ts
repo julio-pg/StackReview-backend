@@ -3,14 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   Query,
+  NotFoundException,
+  Param,
 } from '@nestjs/common';
 import { StacksService } from './stacks.service';
 import { CreateStackDto } from './dto/create-stack.dto';
-import { UpdateStackDto } from './dto/update-stack.dto';
+// import { UpdateStackDto } from './dto/update-stack.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 
 @Controller('stacks')
@@ -35,23 +34,23 @@ export class StacksController {
     return await this.stacksService.findUserStacks(userId);
   }
 
-  @Get(':id')
+  @Get('/single-stack/:id')
   async findOne(@Param('id') id: string) {
     return await this.stacksService.findOne(id);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateStackDto: UpdateStackDto,
-  ) {
-    return await this.stacksService.update(id, updateStackDto);
-  }
+  // @Patch(':id')
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateStackDto: UpdateStackDto,
+  // ) {
+  //   return await this.stacksService.update(id, updateStackDto);
+  // }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return await this.stacksService.remove(id);
-  }
+  // @Delete(':id')
+  // async remove(@Param('id') id: string) {
+  //   return await this.stacksService.remove(id);
+  // }
 
   @Post('/signin')
   async handleSignIn(@Body('credential') credential: string) {
@@ -61,5 +60,15 @@ export class StacksController {
   @Post('/login')
   async handleLogin(@Body('credential') credential: string) {
     return await this.stacksService.handleLogin(credential);
+  }
+
+  @Get('/top-rated')
+  async getTopRatedStacks() {
+    try {
+      return await this.stacksService.getTopRatedStacks();
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get top rated stacks');
+    }
   }
 }

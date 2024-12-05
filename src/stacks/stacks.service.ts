@@ -216,4 +216,16 @@ export class StacksService {
       throw new NotFoundException('Failed to calculate daily task rates');
     }
   }
+  async getTopRatedStacks(): Promise<Stack[]> {
+    try {
+      const topRatedStacks = await this.stackModel
+        .find()
+        .sort({ rating: -1 })
+        .limit(3);
+      return topRatedStacks;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get top rated stacks');
+    }
+  }
 }
