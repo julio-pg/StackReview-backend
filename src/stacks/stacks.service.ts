@@ -8,6 +8,7 @@ import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Creator } from './schemas/creator.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './schemas/Review.schema';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class StacksService {
@@ -187,6 +188,32 @@ export class StacksService {
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to login');
+    }
+  }
+
+  // @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  private async calculateDailyTaskRates() {
+    try {
+      const stacks = await this.stackModel.find();
+      for (const stack of stacks) {
+        let totalRating = 0;
+        let reviewCount = 0;
+        for (const review of stack.reviews) {
+          totalRating += review.rate;
+          reviewCount++;
+        }
+        if (reviewCount > 0) {
+          const averageRating = totalRating / reviewCount;
+          await this.stackModel.findOneAndUpdate(
+            { id: stack.id },
+            { rating: averageRating },
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to calculate daily task rates');
     }
   }
 }
