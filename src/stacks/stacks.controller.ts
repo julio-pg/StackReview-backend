@@ -52,9 +52,9 @@ export class StacksController {
   //   return await this.stacksService.remove(id);
   // }
 
-  @Post('/signin')
-  async handleSignIn(@Body('credential') credential: string) {
-    return await this.stacksService.handleSignIn(credential);
+  @Post('/signup')
+  async handleSignUp(@Body('credential') credential: string) {
+    return await this.stacksService.handleSignUp(credential);
   }
 
   @Post('/login')

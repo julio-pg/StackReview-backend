@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
 import { UpdateStackDto } from './dto/update-stack.dto';
 import { CreatorMini, Stack } from './schemas/stack.schema';
@@ -146,12 +150,18 @@ export class StacksService {
 
   async handleGoogleAuth(credential: string) {
     try {
-      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      const client = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        process.env.GOOGLE_REDIRECT_URI,
+      );
+      // console.log(credential);
+      const token = await client.getToken(credential);
       const ticket = await client.verifyIdToken({
-        idToken: credential,
+        idToken: token.tokens.id_token,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
-      const payload: TokenPayload = ticket.getPayload();
+      const payload = ticket.getPayload();
       return payload;
     } catch (error) {
       console.log(error);
@@ -159,9 +169,16 @@ export class StacksService {
     }
   }
 
-  async handleSignIn(credential: string) {
+  async handleSignUp(credential: string) {
     try {
       const payload: TokenPayload = await this.handleGoogleAuth(credential);
+
+      const existingUser = await this.creatorModel.findOne({
+        'googleUser.email': payload.email,
+      });
+      if (existingUser) {
+        throw new BadRequestException('Email already used');
+      }
       return await this.creatorModel.create({
         name: payload.name,
         avatar: payload.picture,
