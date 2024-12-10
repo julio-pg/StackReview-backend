@@ -13,12 +13,14 @@ import { Creator } from './schemas/creator.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './schemas/Review.schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Technology } from './schemas/technology.schema';
 
 @Injectable()
 export class StacksService {
   constructor(
     @InjectModel(Stack.name) private stackModel: Model<Stack>,
     @InjectModel(Creator.name) private creatorModel: Model<Creator>,
+    @InjectModel(Technology.name) private technologyModel: Model<Technology>,
   ) {}
 
   async create(createStackDto: CreateStackDto) {
@@ -243,6 +245,31 @@ export class StacksService {
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to get top rated stacks');
+    }
+  }
+
+  async addNewTechnologies(technologies: Technology[]) {
+    try {
+      return await this.technologyModel.insertMany(technologies);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException('Failed to add new technologies');
+    }
+  }
+  async getAllTechnologies(): Promise<{ [x: string]: Technology[] }> {
+    try {
+      const techs = await this.technologyModel.find();
+      const techsByCategory = techs.reduce((acc, tech) => {
+        if (!acc[tech.category]) {
+          acc[tech.category] = [];
+        }
+        acc[tech.category].push(tech);
+        return acc;
+      }, {});
+      return techsByCategory;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get all technologies');
     }
   }
 }

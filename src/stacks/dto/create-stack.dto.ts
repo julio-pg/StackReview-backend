@@ -1,4 +1,4 @@
-import { Technology } from '../schemas/stack.schema';
+import { Technology } from '../schemas/technology.schema';
 
 export class CreateStackDto {
   readonly title: string;

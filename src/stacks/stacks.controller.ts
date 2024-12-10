@@ -11,6 +11,7 @@ import { StacksService } from './stacks.service';
 import { CreateStackDto } from './dto/create-stack.dto';
 // import { UpdateStackDto } from './dto/update-stack.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { Technology } from './schemas/technology.schema';
 
 @Controller('stacks')
 export class StacksController {
@@ -69,6 +70,23 @@ export class StacksController {
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to get top rated stacks');
+    }
+  }
+  @Post('/add-new-technologies')
+  async addNewTechnologies(@Body() technologies: Technology[]) {
+    const newTechs = await this.stacksService.addNewTechnologies(technologies);
+    if (newTechs) {
+      return 'New techs added successfully';
+    }
+  }
+
+  @Get('/all-technologies')
+  async getAllTechnologies() {
+    try {
+      return await this.stacksService.getAllTechnologies();
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get all technologies');
     }
   }
 }
