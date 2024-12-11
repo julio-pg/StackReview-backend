@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Stack } from './schemas/stack.schema';
 import { Creator, CreatorSchema } from './schemas/creator.schema';
 import { Technology, TechnologySchema } from './schemas/technology.schema';
+import { Review, ReviewSchema } from './schemas/Review.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Technology, TechnologySchema } from './schemas/technology.schema';
       { name: Stack.name, schema: StackSchema },
       { name: Creator.name, schema: CreatorSchema },
       { name: Technology.name, schema: TechnologySchema },
+      { name: Review.name, schema: ReviewSchema },
     ]),
   ],
   controllers: [StacksController],

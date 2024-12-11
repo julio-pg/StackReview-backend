@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { CreatorMini } from './stack.schema';
 
-export type ReDocument = HydratedDocument<Review>;
+export type ReviewDocument = HydratedDocument<Review>;
 
 @Schema()
 export class Review {
