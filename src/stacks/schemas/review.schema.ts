@@ -9,7 +9,7 @@ export class Review {
   @Prop({ required: true })
   stackId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Object, required: true })
   creator: CreatorMini;
 
   @Prop({ required: true })
