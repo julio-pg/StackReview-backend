@@ -90,11 +90,44 @@ export class StacksService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, limit: number) {
     try {
-      const data = await this.stackModel.find();
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
 
-      return data;
+      const results = await this.stackModel
+        .find()
+        .skip(startIndex)
+        .limit(limit)
+        .exec();
+
+      const total = await this.stackModel.countDocuments();
+      const totalPages = Math.ceil(total / limit);
+
+      const metadata = {
+        total,
+        page,
+        limit,
+        totalPages,
+        next: {},
+        previous: {},
+      };
+
+      if (endIndex < total) {
+        metadata.next = {
+          page: +page + 1,
+          limit: +limit,
+        };
+      }
+
+      if (startIndex > 0) {
+        metadata.previous = {
+          page: +page - 1,
+          limit: +limit,
+        };
+      }
+
+      return { data: results, metadata };
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to fetch stacks');
@@ -114,10 +147,47 @@ export class StacksService {
     }
   }
 
-  async findUserStacks(userId: string) {
+  async findUserStacks(userId: string, page: number, limit: number) {
     try {
-      const data = await this.stackModel.find({ 'creator.id': userId });
-      return data;
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+
+      const results = await this.stackModel
+        .find({ 'creator.id': userId })
+        .skip(startIndex)
+        .limit(limit)
+        .exec();
+
+      const total = await this.stackModel.countDocuments({
+        'creator.id': userId,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      const metadata = {
+        total,
+        page,
+        limit,
+        totalPages,
+        next: {},
+        previous: {},
+      };
+
+      if (endIndex < total) {
+        metadata.next = {
+          page: +page + 1,
+          limit: +limit,
+        };
+      }
+
+      if (startIndex > 0) {
+        metadata.previous = {
+          page: +page - 1,
+          limit: +limit,
+        };
+      }
+
+      return { data: results, metadata };
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to get user stacks');
@@ -235,6 +305,19 @@ export class StacksService {
       throw new NotFoundException('Failed to calculate daily task rates');
     }
   }
+
+  async getStacksByCategory(category: string): Promise<Stack[]> {
+    try {
+      const stacks = await this.stackModel.find({ category });
+      return stacks;
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException(
+        `Failed to get stacks for category: ${category}`,
+      );
+    }
+  }
+
   async getTopRatedStacks(): Promise<Stack[]> {
     try {
       const topRatedStacks = await this.stackModel

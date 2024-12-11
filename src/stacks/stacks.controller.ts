@@ -27,12 +27,19 @@ export class StacksController {
     return await this.stacksService.addReview(createReviewDto);
   }
   @Get('/all')
-  async findAll() {
-    return await this.stacksService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return await this.stacksService.findAll(page, limit);
   }
   @Get('/user-stacks')
-  async findUserStacks(@Query('userId') userId: string) {
-    return await this.stacksService.findUserStacks(userId);
+  async findUserStacks(
+    @Query('userId') userId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return await this.stacksService.findUserStacks(userId, page, limit);
   }
 
   @Get('/single-stack/:id')
