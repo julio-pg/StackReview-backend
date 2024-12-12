@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { Creator } from './creator.schema';
-import { Review } from './Review.schema';
 import { Technology } from './technology.schema';
+import { Review } from './review.schema';
 
 export type StackDocument = HydratedDocument<Stack>;
 

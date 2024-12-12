@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Creator } from './schemas/creator.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { Review } from './schemas/Review.schema';
+import { Review } from './schemas/review.schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Technology } from './schemas/technology.schema';
 
