@@ -6,6 +6,7 @@ import {
   Query,
   NotFoundException,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { StacksService } from './stacks.service';
 import { CreateStackDto } from './dto/create-stack.dto';
@@ -16,7 +17,7 @@ import { Technology } from './schemas/technology.schema';
 @Controller('stacks')
 export class StacksController {
   constructor(private readonly stacksService: StacksService) {}
-
+  // TODO:add an individual description to each technology and set a minor length in the description when create a stack.
   @Post('/create')
   async create(@Body() createStackDto: CreateStackDto) {
     return await this.stacksService.create(createStackDto);
@@ -55,10 +56,10 @@ export class StacksController {
   //   return await this.stacksService.update(id, updateStackDto);
   // }
 
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   return await this.stacksService.remove(id);
-  // }
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return await this.stacksService.remove(id);
+  }
 
   @Post('/signup')
   async handleSignUp(@Body('credential') credential: string) {

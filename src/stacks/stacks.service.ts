@@ -207,9 +207,9 @@ export class StacksService {
     }
   }
 
-  async remove(id: string) {
+  async remove(stackId: string) {
     try {
-      const stack = await this.stackModel.findByIdAndDelete(id);
+      const stack = await this.stackModel.findOneAndDelete({ id: stackId });
       if (!stack) {
         throw new NotFoundException('Stack not found');
       }
