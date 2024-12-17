@@ -16,5 +16,7 @@ export class Technology {
 
   @Prop()
   website: string;
+  @Prop()
+  description: string;
 }
 export const TechnologySchema = SchemaFactory.createForClass(Technology);
