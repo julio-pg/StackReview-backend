@@ -7,12 +7,14 @@ import {
   NotFoundException,
   Param,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { StacksService } from './stacks.service';
 import { CreateStackDto } from './dto/create-stack.dto';
 // import { UpdateStackDto } from './dto/update-stack.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Technology } from './schemas/technology.schema';
+import { UpdateCreatorDto } from './dto/update-creator.dto';
 
 @Controller('stacks')
 export class StacksController {
@@ -69,6 +71,14 @@ export class StacksController {
   @Post('/login')
   async handleLogin(@Body('credential') credential: string) {
     return await this.stacksService.handleLogin(credential);
+  }
+
+  @Patch('/creator/:id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateCreatorDto: UpdateCreatorDto,
+  ) {
+    return await this.stacksService.updateCreator(id, updateCreatorDto);
   }
 
   @Get('/top-rated')

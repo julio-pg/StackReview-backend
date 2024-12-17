@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
-import { UpdateStackDto } from './dto/update-stack.dto';
 import { CreatorMini, Stack } from './schemas/stack.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -14,6 +13,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './schemas/review.schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Technology } from './schemas/technology.schema';
+import { UpdateCreatorDto } from './dto/update-creator.dto';
 
 @Injectable()
 export class StacksService {
@@ -194,16 +194,20 @@ export class StacksService {
     }
   }
 
-  async update(id: string, updateStackDto: UpdateStackDto) {
+  async updateCreator(id: string, updateCreatorDto: UpdateCreatorDto) {
     try {
-      const stack = await this.stackModel.findByIdAndUpdate(id, updateStackDto);
-      if (!stack) {
-        throw new NotFoundException('Stack not found');
+      const newCreator = await this.creatorModel.findOneAndUpdate(
+        { id },
+        updateCreatorDto,
+        { new: true },
+      );
+      if (!newCreator) {
+        throw new NotFoundException('Creator not found');
       }
-      return stack;
+      return newCreator;
     } catch (error) {
       console.log(error);
-      throw new NotFoundException('Failed to update stack');
+      throw new NotFoundException('Failed to update Creator');
     }
   }
 
