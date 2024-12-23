@@ -163,53 +163,6 @@ export class StacksService {
     }
   }
 
-  async findStacksByCategory(category: string, page: number, limit: number) {
-    try {
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-
-      const results = await this.stackModel
-        .find({ category: category })
-        .skip(startIndex)
-        .limit(limit)
-        .exec();
-
-      const total = await this.stackModel.countDocuments({
-        category: category,
-      });
-
-      const totalPages = Math.ceil(total / limit);
-
-      const metadata = {
-        total,
-        page,
-        limit,
-        totalPages,
-        next: {},
-        previous: {},
-      };
-
-      if (endIndex < total) {
-        metadata.next = {
-          page: +page + 1,
-          limit: +limit,
-        };
-      }
-
-      if (startIndex > 0) {
-        metadata.previous = {
-          page: +page - 1,
-          limit: +limit,
-        };
-      }
-
-      return { data: results, metadata };
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException('Failed to fetch stacks by category');
-    }
-  }
-
   async findUserStacks(userId: string, page: number, limit: number) {
     try {
       const startIndex = (page - 1) * limit;
