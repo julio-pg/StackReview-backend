@@ -24,6 +24,7 @@ export class Stack {
   @Prop({ type: Array<Review>, required: false, default: [] })
   reviews: Review[];
 
+  // TODO: add enum type for the category "programming", "design", "marketing", "business"
   @Prop({ required: true })
   category: string;
 
