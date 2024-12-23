@@ -33,8 +33,10 @@ export class StacksController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+    @Query('category') category: string | undefined = undefined,
+    @Query('rating') rating: number | undefined = undefined,
   ) {
-    return await this.stacksService.findAll(page, limit);
+    return await this.stacksService.findAll({ page, limit, category, rating });
   }
   @Get('/user-stacks')
   async findUserStacks(

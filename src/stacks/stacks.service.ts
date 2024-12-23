@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
-import { CreatorMini, Stack } from './schemas/stack.schema';
+import { Category, CreatorMini, Stack } from './schemas/stack.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
@@ -32,7 +32,7 @@ export class StacksService {
       const newStack: Omit<Stack, 'id' | 'rating' | 'reviews'> = {
         title: createStackDto.title,
         description: createStackDto.description,
-        category: createStackDto.category,
+        category: createStackDto.category as Category,
         technologies: createStackDto.technologies,
         creator: creatorMini,
       };
@@ -91,18 +91,33 @@ export class StacksService {
   }
 
   // TODO: ADD the category param and return the data filter by category and add filter by rating
-  async findAll(page: number, limit: number) {
+  async findAll({
+    page,
+    limit,
+    category,
+    rating,
+  }: {
+    page: number;
+    limit: number;
+    category?: string;
+    rating?: number;
+  }) {
     try {
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
 
+      const query: Record<string, any> = {
+        ...(category && { category }),
+        ...(rating && { rating }),
+      };
+
       const results = await this.stackModel
-        .find()
+        .find(query)
         .skip(startIndex)
         .limit(limit)
         .exec();
 
-      const total = await this.stackModel.countDocuments();
+      const total = await this.stackModel.countDocuments(query);
       const totalPages = Math.ceil(total / limit);
 
       const metadata = {

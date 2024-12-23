@@ -24,9 +24,8 @@ export class Stack {
   @Prop({ type: Array<Review>, required: false, default: [] })
   reviews: Review[];
 
-  // TODO: add enum type for the category "programming", "design", "marketing", "business"
   @Prop({ required: true })
-  category: string;
+  category: Category;
 
   @Prop({ type: Array<Technology>, required: true })
   technologies: Technology[];
@@ -38,5 +37,7 @@ export type CreatorMini = Pick<
   Creator,
   'id' | 'avatar' | 'name' | 'username' | 'expertise'
 >;
+
+export type Category = 'programming' | 'design' | 'marketing' | 'business';
 
 export const StackSchema = SchemaFactory.createForClass(Stack);
