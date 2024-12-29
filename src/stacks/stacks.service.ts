@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateStackDto } from './dto/create-stack.dto';
-import { Category, CreatorMini, Stack } from './schemas/stack.schema';
+import { Category, Stack } from './schemas/stack.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
@@ -25,16 +25,16 @@ export class StacksService {
 
   async create(createStackDto: CreateStackDto) {
     try {
-      const creatorMini: CreatorMini = await this.getCreatorMini(
-        createStackDto.creatorId,
-      );
+      const { _id } = await this.creatorModel.findOne({
+        id: createStackDto.creatorId,
+      });
 
       const newStack: Omit<Stack, 'id' | 'rating' | 'reviews'> = {
         title: createStackDto.title,
         description: createStackDto.description,
         category: createStackDto.category as Category,
         technologies: createStackDto.technologies,
-        creator: creatorMini,
+        creator: _id,
       };
       return await this.stackModel.create(newStack);
     } catch (error) {
@@ -51,10 +51,12 @@ export class StacksService {
       if (!stack) {
         throw new NotFoundException('Stack not found');
       }
-      const creatorMini = await this.getCreatorMini(createReviewDto.creatorId);
+      const { _id } = await this.creatorModel.findOne({
+        id: createReviewDto.creatorId,
+      });
       const newReview: Review = {
         stackId: createReviewDto.stackId,
-        creator: creatorMini,
+        creator: _id,
         rate: createReviewDto.rate,
         comment: createReviewDto.comment,
         createdAt: new Date(),
@@ -70,25 +72,25 @@ export class StacksService {
     }
   }
 
-  private async getCreatorMini(creatorId: string): Promise<CreatorMini> {
-    try {
-      const creatorData = await this.creatorModel.findOne({ id: creatorId });
-      if (!creatorData) {
-        throw new NotFoundException('Creator not found');
-      }
-      const creatorMini: CreatorMini = {
-        id: creatorData.id,
-        name: creatorData.name,
-        username: creatorData.username,
-        avatar: creatorData.avatar,
-        expertise: creatorData.expertise,
-      };
-      return creatorMini;
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException('Failed to fetch creator');
-    }
-  }
+  // private async getCreatorMini(creatorId: string): Promise<CreatorMini> {
+  //   try {
+  //     const creatorData = await this.creatorModel.findOne({ id: creatorId });
+  //     if (!creatorData) {
+  //       throw new NotFoundException('Creator not found');
+  //     }
+  //     const creatorMini: CreatorMini = {
+  //       id: creatorData.id,
+  //       name: creatorData.name,
+  //       username: creatorData.username,
+  //       avatar: creatorData.avatar,
+  //       expertise: creatorData.expertise,
+  //     };
+  //     return creatorMini;
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new NotFoundException('Failed to fetch creator');
+  //   }
+  // }
 
   // TODO: ADD the category param and return the data filter by category and add filter by rating
   async findAll({
@@ -113,6 +115,10 @@ export class StacksService {
 
       const results = await this.stackModel
         .find(query)
+        .populate({
+          path: 'creator',
+          select: 'id avatar name username expertise',
+        })
         .skip(startIndex)
         .limit(limit)
         .exec();

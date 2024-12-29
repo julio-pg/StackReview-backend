@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { CreatorMini } from './stack.schema';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type ReviewDocument = HydratedDocument<Review>;
 
@@ -9,8 +8,12 @@ export class Review {
   @Prop({ required: true })
   stackId: string;
 
-  @Prop({ type: Object, required: true })
-  creator: CreatorMini;
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Creator',
+    required: true,
+  })
+  creator: Types.ObjectId;
 
   @Prop({ required: true })
   rate: number;

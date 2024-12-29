@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { Creator } from './creator.schema';
+
 import { Technology } from './technology.schema';
 import { Review } from './review.schema';
 
@@ -30,13 +30,13 @@ export class Stack {
   @Prop({ type: Array<Technology>, required: true })
   technologies: Technology[];
 
-  @Prop({ type: Object, required: true })
-  creator: CreatorMini;
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Creator',
+    required: true,
+  })
+  creator: Types.ObjectId;
 }
-export type CreatorMini = Pick<
-  Creator,
-  'id' | 'avatar' | 'name' | 'username' | 'expertise'
->;
 
 export type Category = 'programming' | 'design' | 'marketing' | 'business';
 
