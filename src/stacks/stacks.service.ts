@@ -346,22 +346,14 @@ export class StacksService {
     }
   }
 
-  async getStacksByCategory(category: string): Promise<Stack[]> {
-    try {
-      const stacks = await this.stackModel.find({ category });
-      return stacks;
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException(
-        `Failed to get stacks for category: ${category}`,
-      );
-    }
-  }
-
   async getTopRatedStacks(): Promise<Stack[]> {
     try {
       const topRatedStacks = await this.stackModel
         .find()
+        .populate({
+          path: 'creator',
+          select: 'id avatar name username expertise',
+        })
         .sort({ rating: -1 })
         .limit(3);
       return topRatedStacks;
