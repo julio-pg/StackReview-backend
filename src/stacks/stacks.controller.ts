@@ -75,6 +75,16 @@ export class StacksController {
     return await this.stacksService.handleLogin(credential);
   }
 
+  @Get('/single-user/:id')
+  async getSingleUser(@Param('id') id: string) {
+    try {
+      return await this.stacksService.getSingleUser(id);
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get single user');
+    }
+  }
+
   @Patch('/creator/:id')
   async update(
     @Param('id') id: string,

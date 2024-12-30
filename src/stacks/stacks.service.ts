@@ -72,27 +72,6 @@ export class StacksService {
     }
   }
 
-  // private async getCreatorMini(creatorId: string): Promise<CreatorMini> {
-  //   try {
-  //     const creatorData = await this.creatorModel.findOne({ id: creatorId });
-  //     if (!creatorData) {
-  //       throw new NotFoundException('Creator not found');
-  //     }
-  //     const creatorMini: CreatorMini = {
-  //       id: creatorData.id,
-  //       name: creatorData.name,
-  //       username: creatorData.username,
-  //       avatar: creatorData.avatar,
-  //       expertise: creatorData.expertise,
-  //     };
-  //     return creatorMini;
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new NotFoundException('Failed to fetch creator');
-  //   }
-  // }
-
-  // TODO: ADD the category param and return the data filter by category and add filter by rating
   async findAll({
     page,
     limit,
@@ -185,17 +164,22 @@ export class StacksService {
 
   async findUserStacks(userId: string, page: number, limit: number) {
     try {
+      const { _id } = await this.creatorModel.findOne({ id: userId });
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
 
       const results = await this.stackModel
-        .find({ 'creator.id': userId })
+        .find({ creator: _id })
+        .populate({
+          path: 'creator',
+          select: 'id avatar name username expertise',
+        })
         .skip(startIndex)
         .limit(limit)
         .exec();
 
       const total = await this.stackModel.countDocuments({
-        'creator.id': userId,
+        creator: _id,
       });
 
       const totalPages = Math.ceil(total / limit);
@@ -317,6 +301,15 @@ export class StacksService {
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to login');
+    }
+  }
+
+  async getSingleUser(userId: string) {
+    try {
+      return await this.creatorModel.findOne({ id: userId });
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get user');
     }
   }
 
