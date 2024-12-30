@@ -21,7 +21,7 @@ export class Review {
   @Prop({ required: true })
   comment: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 }
 

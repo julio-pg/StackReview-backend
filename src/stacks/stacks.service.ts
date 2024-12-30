@@ -158,7 +158,21 @@ export class StacksService {
 
   async findOne(id: string) {
     try {
-      const stack = await this.stackModel.findOne({ id });
+      const stack = await this.stackModel
+        .findOne({ id })
+        .populate({
+          path: 'creator',
+          select: 'id avatar name username expertise',
+        })
+        .populate({
+          path: 'reviews', // Populate the reviews array
+          populate: {
+            path: 'creator', // Populate the creator field in each review
+            model: 'Creator', // Specify the model for the creator field
+            select: 'id avatar name username expertise',
+          },
+        })
+        .exec();
       if (!stack) {
         throw new NotFoundException('Stack not found');
       }
