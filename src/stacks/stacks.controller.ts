@@ -19,7 +19,6 @@ import { UpdateCreatorDto } from './dto/update-creator.dto';
 @Controller('stacks')
 export class StacksController {
   constructor(private readonly stacksService: StacksService) {}
-  // TODO:add an individual description to each technology and set a minor length in the description when create a stack.
   @Post('/create')
   async create(@Body() createStackDto: CreateStackDto) {
     return await this.stacksService.create(createStackDto);
@@ -63,11 +62,6 @@ export class StacksController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.stacksService.remove(id);
-  }
-
-  @Post('/signup')
-  async handleSignUp(@Body('credential') credential: string) {
-    return await this.stacksService.handleSignUp(credential);
   }
 
   @Post('/login')

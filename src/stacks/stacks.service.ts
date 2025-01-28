@@ -252,9 +252,9 @@ export class StacksService {
         process.env.GOOGLE_REDIRECT_URI,
       );
       // console.log(credential);
-      const token = await client.getToken(credential);
+      // const token = await client.getToken(credential);
       const ticket = await client.verifyIdToken({
-        idToken: token.tokens.id_token,
+        idToken: credential,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
@@ -265,39 +265,23 @@ export class StacksService {
     }
   }
 
-  async handleSignUp(credential: string) {
+  async handleLogin(credential: string) {
     try {
       const payload: TokenPayload = await this.handleGoogleAuth(credential);
-
-      const existingUser = await this.creatorModel.findOne({
-        'googleUser.email': payload.email,
+      const creator = await this.creatorModel.findOne({
+        email: payload.email,
       });
-      if (existingUser) {
-        throw new BadRequestException('Email already used');
+
+      if (creator) {
+        return creator;
       }
       return await this.creatorModel.create({
         name: payload.name,
         avatar: payload.picture,
         expertise: 'Software Engineer',
         bio: 'I am a software engineer',
-        googleUser: payload,
+        email: payload.email,
       });
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException('Failed to sign in');
-    }
-  }
-
-  async handleLogin(credential: string) {
-    try {
-      const payload: TokenPayload = await this.handleGoogleAuth(credential);
-      const creator = await this.creatorModel.findOne({
-        'googleUser.sub': payload.sub,
-      });
-      if (!creator) {
-        throw new NotFoundException('Creator not found');
-      }
-      return creator;
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to login');

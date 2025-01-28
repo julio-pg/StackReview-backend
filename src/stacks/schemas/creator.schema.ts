@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TokenPayload } from 'google-auth-library';
 import { HydratedDocument } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,6 +23,9 @@ export class Creator {
   avatar: string;
 
   @Prop({ required: true })
+  email: string;
+
+  @Prop({ required: true })
   expertise: string;
 
   @Prop({ required: true })
@@ -33,8 +35,8 @@ export class Creator {
   @Prop({ required: false })
   twitter: string;
 
-  @Prop({ type: Object, required: true })
-  googleUser: TokenPayload;
+  // @Prop({ type: Object, required: true })
+  // googleUser: TokenPayload;
 }
 
 export const CreatorSchema = SchemaFactory.createForClass(Creator);
