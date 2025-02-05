@@ -72,27 +72,6 @@ export class StacksService {
     }
   }
 
-  // private async getCreatorMini(creatorId: string): Promise<CreatorMini> {
-  //   try {
-  //     const creatorData = await this.creatorModel.findOne({ id: creatorId });
-  //     if (!creatorData) {
-  //       throw new NotFoundException('Creator not found');
-  //     }
-  //     const creatorMini: CreatorMini = {
-  //       id: creatorData.id,
-  //       name: creatorData.name,
-  //       username: creatorData.username,
-  //       avatar: creatorData.avatar,
-  //       expertise: creatorData.expertise,
-  //     };
-  //     return creatorMini;
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new NotFoundException('Failed to fetch creator');
-  //   }
-  // }
-
-  // TODO: ADD the category param and return the data filter by category and add filter by rating
   async findAll({
     page,
     limit,
@@ -183,19 +162,24 @@ export class StacksService {
     }
   }
 
-  async findUserStacks(userId: string, page: number, limit: number) {
+  async findUserStacks(userName: string, page: number, limit: number) {
     try {
+      const { _id } = await this.creatorModel.findOne({ username: userName });
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
 
       const results = await this.stackModel
-        .find({ 'creator.id': userId })
+        .find({ creator: _id })
+        .populate({
+          path: 'creator',
+          select: 'id avatar name username expertise',
+        })
         .skip(startIndex)
         .limit(limit)
         .exec();
 
       const total = await this.stackModel.countDocuments({
-        'creator.id': userId,
+        creator: _id,
       });
 
       const totalPages = Math.ceil(total / limit);
@@ -268,9 +252,9 @@ export class StacksService {
         process.env.GOOGLE_REDIRECT_URI,
       );
       // console.log(credential);
-      const token = await client.getToken(credential);
+      // const token = await client.getToken(credential);
       const ticket = await client.verifyIdToken({
-        idToken: token.tokens.id_token,
+        idToken: credential,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
@@ -281,42 +265,35 @@ export class StacksService {
     }
   }
 
-  async handleSignUp(credential: string) {
+  async handleLogin(credential: string) {
     try {
       const payload: TokenPayload = await this.handleGoogleAuth(credential);
-
-      const existingUser = await this.creatorModel.findOne({
-        'googleUser.email': payload.email,
+      const creator = await this.creatorModel.findOne({
+        email: payload.email,
       });
-      if (existingUser) {
-        throw new BadRequestException('Email already used');
+
+      if (creator) {
+        return creator;
       }
       return await this.creatorModel.create({
         name: payload.name,
         avatar: payload.picture,
         expertise: 'Software Engineer',
         bio: 'I am a software engineer',
-        googleUser: payload,
+        email: payload.email,
       });
-    } catch (error) {
-      console.log(error);
-      throw new NotFoundException('Failed to sign in');
-    }
-  }
-
-  async handleLogin(credential: string) {
-    try {
-      const payload: TokenPayload = await this.handleGoogleAuth(credential);
-      const creator = await this.creatorModel.findOne({
-        'googleUser.sub': payload.sub,
-      });
-      if (!creator) {
-        throw new NotFoundException('Creator not found');
-      }
-      return creator;
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to login');
+    }
+  }
+
+  async getSingleUser(userName: string) {
+    try {
+      return await this.creatorModel.findOne({ username: userName });
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('Failed to get user');
     }
   }
 
