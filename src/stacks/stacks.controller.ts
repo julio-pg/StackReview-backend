@@ -39,11 +39,11 @@ export class StacksController {
   }
   @Get('/user-stacks')
   async findUserStacks(
-    @Query('userId') userId: string,
+    @Query('userName') userName: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    return await this.stacksService.findUserStacks(userId, page, limit);
+    return await this.stacksService.findUserStacks(userName, page, limit);
   }
 
   @Get('/single-stack/:id')
@@ -69,10 +69,10 @@ export class StacksController {
     return await this.stacksService.handleLogin(credential);
   }
 
-  @Get('/single-user/:id')
-  async getSingleUser(@Param('id') id: string) {
+  @Get('/single-user/:userName')
+  async getSingleUser(@Param('userName') userName: string) {
     try {
-      return await this.stacksService.getSingleUser(id);
+      return await this.stacksService.getSingleUser(userName);
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to get single user');

@@ -162,9 +162,9 @@ export class StacksService {
     }
   }
 
-  async findUserStacks(userId: string, page: number, limit: number) {
+  async findUserStacks(userName: string, page: number, limit: number) {
     try {
-      const { _id } = await this.creatorModel.findOne({ id: userId });
+      const { _id } = await this.creatorModel.findOne({ username: userName });
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
 
@@ -288,9 +288,9 @@ export class StacksService {
     }
   }
 
-  async getSingleUser(userId: string) {
+  async getSingleUser(userName: string) {
     try {
-      return await this.creatorModel.findOne({ id: userId });
+      return await this.creatorModel.findOne({ username: userName });
     } catch (error) {
       console.log(error);
       throw new NotFoundException('Failed to get user');
